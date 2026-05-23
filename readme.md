@@ -1,22 +1,25 @@
-Automatic Light
-===============
+Clock (NTP) with Temperature and Humidity Display
+=================================================
 
-A simple light which responds to ambient levels before turning on automatically. It also uses the current time to turn off at sensible hours (i.e. after 11pm).
-
-# Wiring for ESP32
-
-Three components are required:
+# Components Required
 
     1. ESP32 C3
-    2. Phototransistor
-    3. 10K ohm resistor
-    4. 6 LED NeoPixel Strip 
+    2. SSD13XX OLED screen
+    3. AHTX0 sensor
 
-## Phototransistor
+# Deployment
 
-Connect the collector (shorted leg) to **+3.3v**, and the emitter to ADC pin **GPIO 1** and **GND** via the resistor for pull-down.
+    ./clone_dependencies.sh
+    ./libs/deploy/deploy.py .
 
-## LED Strip
+# Setup
 
-Power may come from the C3 using the **+5v** and **GND**. Control wire should connect to **GPIO 0**.
+Once deployed, connect:
 
+    ./libs/deploy/connect.py
+
+And use the repl to set the wifi:
+
+    
+    from rb.core.wifi import *
+    configure_wifi()
