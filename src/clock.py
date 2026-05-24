@@ -2,8 +2,9 @@ import time
 from machine import Pin, I2C
 
 from rb.core import ScreenContext
+from rb.core.constants import MONTHS_3
 from rb.core.store import store
-from rb.core.time import get_tz
+from rb.core.time import get_tz, local_secs
 from rb.core.wifi import WifiManager, get_wifi_creds
 from rb.dev.ahtx0 import new_soft_aht20
 from rb.dev.ssd1306 import SSD1306_I2C
@@ -30,9 +31,11 @@ class ClockScreen:
     def refresh(self):
         with ScreenContext(self.fb):
             # Time
-            year, month, day, h, m, s, weekday, yearday = time.localtime(time.time())
+            year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
             y = 4
-            self.fb.text(f'{year:04d}-{month:02d}-{day:02d}'.center(16), 0, y, 1)
+            month = MONTHS_3[month - 1]
+            self.fb.text(f'{day:02d} {month}', 0, y, 1)
+            self.fb.text(f'{year:04d}', 128 - (8*4), y, 1)
             y += 8 + 4
             self.fb.hline(0, y, 128, 1)
             y += 1 + 4
