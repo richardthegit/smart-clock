@@ -2,8 +2,9 @@ import time
 from machine import Pin, I2C
 
 from rb.core import ScreenContext
-from rb.core.persist import store
-from rb.core.wifi import WifiManager
+from rb.core.store import store
+from rb.core.time import get_tz
+from rb.core.wifi import WifiManager, get_wifi_creds
 from rb.dev.ahtx0 import new_soft_aht20
 from rb.dev.ssd1306 import SSD1306_I2C
 from text import scaled_text
@@ -17,7 +18,7 @@ class ClockScreen:
         self.fb = SSD1306_I2C(128, 64, screen, addr = 0x3C)
         self.th = new_soft_aht20(scl = 3, sda = 2)
 
-        ssid, pw = store.get_wifi_creds()
+        ssid, pw = get_wifi_creds()
         with ScreenContext(self.fb):
             self.fb.text('NTP Update...', 0, 0, 1)
             self.fb.text('Wifi SSID:', 0, 12, 1)
@@ -41,7 +42,10 @@ class ClockScreen:
 
             y += 1 + 4
             self.fb.text('Temp', 0, y, 1)
-            self.fb.text(f'{"R/H%":>16}', 0, y, 1) 
+            self.fb.text(f'{"R/H%":>16}', 0, y, 1)
+
+            tz, offset = get_tz()
+            self.fb.text(tz, int((128 - (8*3)) / 2), y, 1)
             
             y += 8 + 2
             self.fb.text(f'{self.th.temperature:.1f}', 0, y, 1)
