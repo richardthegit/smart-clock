@@ -13,10 +13,10 @@ class ClockScreen:
     """
     Time/date display on an SSD1306 128*64 screen.
     """
-    def __init__(self, sda_pin = 1, scl_pin = 0):
+    def __init__(self, sda_pin = 2, scl_pin = 3):
         screen = I2C(0, sda = Pin(sda_pin), scl = Pin(scl_pin))
         self.fb = SSD1306_I2C(128, 64, screen, addr = 0x3C)
-        self.th = new_soft_aht20(scl = 3, sda = 2)
+        self.th = new_soft_aht20(scl = 0, sda = 1)
 
         ssid, pw = get_wifi_creds()
         with ScreenContext(self.fb):
