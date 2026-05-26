@@ -2,7 +2,7 @@ import time
 from machine import Pin, I2C
 
 from rb.core import ScreenContext
-from rb.core.constants import MONTHS_3
+from rb.core.constants import MONTHS_3, DAYS
 from rb.core.store import store
 from rb.core.time import get_tz, local_secs
 from rb.core.wifi import WifiManager, get_wifi_creds
@@ -28,33 +28,48 @@ class ClockScreen:
         with WifiManager() as wm:
             wm.wifi.ntp()
 
+    def layout(self):
+        # Air
+        y = 0
+        self.fb.text('Temp', 0, y, 1)
+        self.fb.text(f'{"Humid":>16}', 0, y, 1)
+
+        y += 11
+        scaled_text(self.fb, f'{int(self.th.relative_humidity):>7}%', 0, y, 2, 1)
+        scaled_text(self.fb, f'{self.th.temperature:.1f}', 0, y, 2, 1)
+
+        y += 20
+        x = 128 - (16*3) - 13
+        w = 9
+        self.fb.rect(x, 0, w, y, 1, True)
+        self.fb.rect(0, y, 128, 2, 1, True)
+        self.fb.hline(x - 1, y - 2, w + 2, 1)
+        self.fb.hline(x - 2, y - 1, w + 4, 1)
+        y += 1 + 6
+
+        # Time
+        year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
+        tz, offset = get_tz()
+        scaled_text(self.fb, f'{h:02d}:{m:02d}:{s:02d}', 0, y, 2, 1)
+
+        y = self.fb.height - 8
+        if s % 2:                    
+            self.fb.text(f'{day:02d} {MONTHS_3[month - 1]}', 0, y, 1)
+        else:
+            self.fb.text(f'{DAYS[weekday]}', 0, y, 1)
+
+        self.fb.text(tz, 128 - (8 * 3), y, 1)
+
     def refresh(self):
         with ScreenContext(self.fb):
-            # Time
-            year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
-            y = 4
-            month = MONTHS_3[month - 1]
-            self.fb.text(f'{day:02d} {month}', 0, y, 1)
-            self.fb.text(f'{year:04d}', 128 - (8*4), y, 1)
-            y += 8 + 4
-            self.fb.hline(0, y, 128, 1)
-            y += 1 + 4
-            scaled_text(self.fb, f'{h:02d}:{m:02d}:{s:02d}', 0, y, 2, 1)
-            y += 16 + 4
-            self.fb.hline(0, y, 128, 1)
-
-            y += 1 + 4
-            self.fb.text('Temp', 0, y, 1)
-            self.fb.text(f'{"R/H%":>16}', 0, y, 1)
-
-            tz, offset = get_tz()
-            self.fb.text(tz, int((128 - (8*3)) / 2), y, 1)
-            
-            y += 8 + 2
-            self.fb.text(f'{self.th.temperature:.1f}', 0, y, 1)
-            self.fb.text(f'{self.th.relative_humidity:>16.1f}', 0, y, 1)
+            self.layout()
 
     def run(self):
+        last_update = 0
         while True:
-            self.refresh()
-            time.sleep(1)
+            now = int(time.time())
+            if now != last_update:
+                self.refresh()
+                last_update = now
+
+            time.sleep(1 / 100)
