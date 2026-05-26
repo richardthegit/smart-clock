@@ -43,8 +43,8 @@ class ClockScreen:
         self.fb.text(f'{"Humid":>16}', 0, y, 1)
 
         y += 11
-        scaled_text(self.fb, f'{int(self.th.relative_humidity):>7}%', 0, y, 2, 1)
-        scaled_text(self.fb, f'{self.th.temperature:.1f}', 0, y, 2, 1)
+        scaled_text(self.fb, f'{round(self.th.relative_humidity):>7}%', 0, y, 2, 1)
+        scaled_text(self.fb, f'{round(self.th.temperature, 1):.1f}', 0, y, 2, 1)
 
         y += 20
         x = 128 - (16*3) - 13
