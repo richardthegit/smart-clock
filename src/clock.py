@@ -1,32 +1,40 @@
-import time
+import asyncio, time
 from machine import Pin, I2C
 
 from rb.core import ScreenContext
 from rb.core.constants import MONTHS_3, DAYS
+from rb.core.richtext import rt
 from rb.core.store import store
-from rb.core.time import get_tz, local_secs
-from rb.core.wifi import WifiManager, get_wifi_creds
-from rb.dev.ahtx0 import new_soft_aht20
+from rb.core.tz import get_tz, local_secs
+from rb.core.wifi import get_wifi_creds
 from rb.dev.ssd1306 import SSD1306_I2C
 from text import scaled_text
+
 
 class ClockScreen:
     """
     Time/date display on an SSD1306 128*64 screen.
     """
-    def __init__(self, sda_pin = 2, scl_pin = 3):
-        screen = I2C(0, sda = Pin(sda_pin), scl = Pin(scl_pin))
-        self.fb = SSD1306_I2C(128, 64, screen, addr = 0x3C)
-        self.th = new_soft_aht20(scl = 0, sda = 1)
+    def __init__(self, th_sensor, wifi, scl = 3, sda = 2):
+        """
+        Note: This will create a hardware I2C device; if the microcontroller
+        only has support for one hardware device be sure to use a software 
+        one for the passed temperature sensor.
+        """
+        self.th = th_sensor
+        self.wifi = wifi
 
+        screen = I2C(0, scl = Pin(scl), sda = Pin(sda))
+        self.fb = SSD1306_I2C(128, 64, screen, addr = 0x3C)        
+
+        # Get current time via NTP.
         ssid, pw = get_wifi_creds()
         with ScreenContext(self.fb):
             self.fb.text('NTP Update...', 0, 0, 1)
             self.fb.text('Wifi SSID:', 0, 12, 1)
             self.fb.text(ssid, 0, 24, 1)
 
-        with WifiManager() as wm:
-            wm.wifi.ntp()
+        wifi.ntp()
 
     def layout(self):
         # Air
@@ -64,7 +72,12 @@ class ClockScreen:
         with ScreenContext(self.fb):
             self.layout()
 
-    def run(self):
+    async def run(self):
+        """
+        Run forever.
+        """
+        rt.info('ClockScreen running forever...')
+        
         last_update = 0
         while True:
             now = int(time.time())
@@ -72,4 +85,4 @@ class ClockScreen:
                 self.refresh()
                 last_update = now
 
-            time.sleep(1 / 100)
+            await asyncio.sleep(1 / 100)
