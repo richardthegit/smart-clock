@@ -23,3 +23,7 @@ And use the repl to set the wifi:
     
     from rb.core.wifi import *
     configure_wifi()
+
+# Acknowledgements
+
+Custom font rendering is provided by: https://github.com/easytarget/microPyEZfonts
