@@ -9,7 +9,7 @@ from rb.core.tz import get_tz, local_secs
 from rb.core.wifi import get_wifi_creds
 from rb.dev.ssd1306 import SSD1306_I2C
 
-from fonts import (ezFBfont_helvB08_latin_13, ezFBfont_helvB12_latin_20, 
+from fonts import (ezFBfont_helvR08_ascii_11, ezFBfont_helvB12_latin_20, 
                    ezFBfont_helvB18_latin_29, ezFBfont_helvB24_ascii_32)
 from fonts.ezFBfont import ezFBfont
 
@@ -37,7 +37,7 @@ class ClockScreen:
         if self.big:
             self.font_xl = ezFBfont(self.fb, ezFBfont_helvB24_ascii_32)
         else:
-            self.font_sm = ezFBfont(self.fb, ezFBfont_helvB08_latin_13)
+            self.font_sm = ezFBfont(self.fb, ezFBfont_helvR08_ascii_11)
 
         # Get current time via NTP.
         ssid, pw = get_wifi_creds()
@@ -72,13 +72,15 @@ class ClockScreen:
         year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
         tz, offset = get_tz()
         self.font_lg.write(f'{h:02d}:{m:02d}:{s:02d}', 0, y - 3)
-        self.font_sm.write(tz, right, y, halign = 'right')
+        self.font_sm.write(tz, right, y + 2, halign = 'right')
 
         self.separator(70, y - 2)
-        y = self.separator(70, self.fb.height - 16, up = False)
+        self.separator(70, self.fb.height - 16, up = False) + 1
 
-        self.font_sm.write(f'{DAYS[weekday]}', 0, y)
-        self.font_sm.write(f'{day:02d} {MONTHS_3[month - 1]}', right, y, halign = 'right')
+        y = self.fb.height
+        self.font_sm.write(f'{DAYS[weekday]}', 0, y, valign = 'bottom')
+        self.font_sm.write(f'{day} {MONTHS_3[month - 1]}', right, y, 
+                           halign = 'right', valign = 'bottom')
 
     def layout_big(self):
         right = self.fb.width
