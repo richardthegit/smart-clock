@@ -134,3 +134,6 @@ class ClockScreen:
 
 def config_clock():
     store.set('big_clock', input('Big clock? (y/N): ') == 'y')
+
+def toggle_big_clock():
+    store.set('big_clock', not store.get('big_clock', False))

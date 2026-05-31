@@ -2,10 +2,14 @@ import asyncio
 
 from rb.core.richtext import rt
 from rb.core.wifi import Wifi
+from rb.core.store import store
 from rb.dev.ahtx0 import new_soft_aht20
 from rb.mqtt.manager import get_mqtt_creds
 from clock import ClockScreen
 from richy_air import RichyAirMQTT
+
+rt.title('Saved settings:')
+store.dump()
 
 wifi = Wifi()
 wifi.on()
@@ -22,11 +26,9 @@ else:
 
 
 async def main():
-    rt.p('Creating clock task...')
     asyncio.create_task(clock.run())
 
     if air: 
-        rt.p('Creating RichyAir task...')
         asyncio.create_task(air.run(sensor, wifi))
     
     # Keep the main loop alive
