@@ -60,6 +60,15 @@ class ClockScreen:
         self.fb.rect(0, y, 128, 2, 1, True)
         return y + 3
 
+    def set_brightness(self, hour):
+        """
+        Dim the display at night.
+        """
+        if hour > 22 or hour < 6:
+            self.fb.contrast(1)
+        else:
+            self.fb.contrast(255)
+
     def layout_detail(self):
         right = self.fb.width
         # Air
@@ -71,6 +80,8 @@ class ClockScreen:
         # Time
         year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
         tz, offset = get_tz()
+
+        self.set_brightness(h)
         self.font_lg.write(f'{h:02d}:{m:02d}:{s:02d}', 0, y - 3)
         self.font_sm.write(tz, right, y + 2, halign = 'right')
 
@@ -94,6 +105,8 @@ class ClockScreen:
         # Time
         year, month, day, h, m, s, weekday, yearday = time.localtime(local_secs())
         tz, offset = get_tz()
+
+        self.set_brightness(h)
         self.font_xl.write(f'{h:02d}:{m:02d}', right / 2, y + 4, halign = 'center')
 
     def refresh(self):
